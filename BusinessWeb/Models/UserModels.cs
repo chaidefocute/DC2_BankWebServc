@@ -16,6 +16,28 @@ namespace BankMvc.Models
         public bool IsActive { get; set; }
     }
 
+    // data for the profile page, only Name, Email, Address and Phone can be changed
+    public class ProfileViewModel
+    {
+        // shown on the page but not editable
+        public string Username { get; set; } = "";
+        public string Role { get; set; } = "";
+        public bool HasPicture { get; set; }
+
+        [Required(ErrorMessage = "Full name is required."), StringLength(100)]
+        [Display(Name = "Full name")]
+        public string Name { get; set; } = "";
+
+        [Required(ErrorMessage = "Email is required."), EmailAddress, StringLength(100)]
+        public string Email { get; set; } = "";
+
+        [StringLength(200)]
+        public string? Address { get; set; }
+
+        [StringLength(30), Phone]
+        public string? Phone { get; set; }
+    }
+
     // data from the sign in form
     public class LoginViewModel
     {

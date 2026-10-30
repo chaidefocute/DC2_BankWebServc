@@ -105,6 +105,35 @@ namespace BankMvc.Services
         public Task<ApiResult<UserDto>> GetUserAsync(int userId) =>
             Send<UserDto>(new RestRequest($"{Routes.Users}/{userId}"));
 
+        // update a user's name, email, address and phone (the service replies 204 with no body)
+        public Task<ApiResult<JsonElement>> UpdateUserAsync(int userId, ProfileViewModel m) =>
+            Send<JsonElement>(new RestRequest($"{Routes.Users}/{userId}", Method.Put)
+                .AddJsonBody(new { m.Name, m.Email, m.Address, m.Phone }));
+
+        // upload a profile picture, the service checks the file type and size
+        public Task<ApiResult<UserDto>> UploadPictureAsync(int userId, IFormFile file)
+        {
+            var req = new RestRequest($"{Routes.Users}/{userId}/picture", Method.Post);
+            req.AddFile("file", () => file.OpenReadStream(), file.FileName, file.ContentType);
+            return Send<UserDto>(req);
+        }
+
+        // get the picture file, null if the user has none or the service is down
+        public async Task<(byte[] Data, string ContentType)?> GetPictureAsync(int userId)
+        {
+            try
+            {
+                var resp = await _client.ExecuteAsync(new RestRequest($"{Routes.Users}/{userId}/picture"));
+                if (!resp.IsSuccessful || resp.RawBytes == null)
+                    return null;
+                return (resp.RawBytes, resp.ContentType ?? "image/jpeg");
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         // ---------- sign in / register ----------
 
         // check the username + password, wrong details come back as Ok = false with the service's message
