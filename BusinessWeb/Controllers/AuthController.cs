@@ -20,8 +20,7 @@ namespace BankMvc.Controllers
 
         // method to show the sign in form
         [HttpGet]
-        public IActionResult Login(string? returnUrl = null)
-            => View(new LoginViewModel { ReturnUrl = returnUrl });
+        public IActionResult Login() => View(new LoginViewModel());
 
         // method to check the username + password and sign the user in
         [HttpPost]
@@ -40,10 +39,6 @@ namespace BankMvc.Controllers
             }
 
             await SignInAsync(result.Data);
-
-            // only go back to a page on this site, so a link can't send the user to another website after signing in
-            if (Url.IsLocalUrl(m.ReturnUrl))
-                return Redirect(m.ReturnUrl);
 
             // home sends admins to the dashboard and customers to their accounts
             return RedirectToAction("Index", "Home");

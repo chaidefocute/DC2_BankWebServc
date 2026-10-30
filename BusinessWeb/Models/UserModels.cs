@@ -44,7 +44,6 @@ namespace BankMvc.Models
         // part of the username, name or email
         public string? Search { get; set; }
 
-        // Customer, Admin or empty = both
         public string? Role { get; set; }
 
         public int Page { get; set; } = 1;
@@ -67,9 +66,6 @@ namespace BankMvc.Models
 
         [Required(ErrorMessage = "Password is required."), DataType(DataType.Password)]
         public string Password { get; set; } = "";
-
-        // the page the user wanted before being sent to sign in
-        public string? ReturnUrl { get; set; }
     }
 
     // data from the register form (same rules as the part A service)
@@ -98,6 +94,23 @@ namespace BankMvc.Models
 
         [DataType(DataType.Password), Display(Name = "Confirm password")]
         [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
+        public string ConfirmPassword { get; set; } = "";
+    }
+
+    // data from the change password form on the profile page
+    public class ChangePasswordViewModel
+    {
+        [Required(ErrorMessage = "Current password is required."), DataType(DataType.Password)]
+        [Display(Name = "Current password")]
+        public string CurrentPassword { get; set; } = "";
+
+        [Required(ErrorMessage = "New password is required."), DataType(DataType.Password)]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be at least 8 characters.")]
+        [Display(Name = "New password")]
+        public string NewPassword { get; set; } = "";
+
+        [DataType(DataType.Password), Display(Name = "Confirm new password")]
+        [Compare(nameof(NewPassword), ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; } = "";
     }
 }

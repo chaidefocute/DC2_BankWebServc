@@ -106,9 +106,39 @@ namespace BankMvc.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // method that changes the user's own password, the current one is checked first
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel m)
+        {
+            if (!TryGetUserId(out var userId))
+                return Challenge();
+
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = ModelState.Values.SelectMany(v => v.Errors).First().ErrorMessage;
+                return RedirectToAction(nameof(Index));
+            }
+
+            // check the current password by trying to sign in with it
+            var check = await _api.LoginAsync(User.Identity?.Name ?? "", m.CurrentPassword);
+            if (!check.Ok)
+            {
+                TempData["Error"] = check.Message;
+                return RedirectToAction(nameof(Index));
+            }
+
+            var result = await _api.ResetPasswordAsync(userId, m.NewPassword);
+            if (result.Ok)
+                TempData["Success"] = "Your password has been changed.";
+            else
+                TempData["Error"] = result.Message;
+
+            return RedirectToAction(nameof(Index));
+        }
+
         // the picture itself, the browser loads it from here (the part A service is never called from the browser)
         [HttpGet]
-        [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]   // so a new upload shows straight away
         public async Task<IActionResult> Picture()
         {
             if (!TryGetUserId(out var userId))

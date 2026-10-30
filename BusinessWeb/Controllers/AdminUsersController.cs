@@ -22,9 +22,9 @@ namespace BankMvc.Controllers
         // everything comes from the query string, ex: ?Search=smith&Role=Customer&Page=2
         public async Task<IActionResult> Index(UserSearchQuery query)
         {
-            // fix the page, page size & role in case the browser sends wrong values
+            // fix the page & role in case the browser sends wrong values, always 10 users per page
             query.Page = Math.Max(1, query.Page);
-            query.PageSize = new[] { 10, 25, 50 }.Contains(query.PageSize) ? query.PageSize : 10;
+            query.PageSize = 10;
             if (query.Role != "Customer" && query.Role != "Admin")
                 query.Role = null;
 

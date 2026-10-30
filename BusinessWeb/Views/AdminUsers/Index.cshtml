@@ -1,19 +1,6 @@
 @model BankMvc.Controllers.AdminUsersViewModel
 @{
     ViewData["Title"] = "Users";
-
-    // builds the link values for paging links, keeps the current filters (only the filled ones)
-    Dictionary<string, string> Link(int page)
-    {
-        var d = new Dictionary<string, string>
-        {
-            ["Page"] = page.ToString(),
-            ["PageSize"] = Model.Query.PageSize.ToString()
-        };
-        if (!string.IsNullOrWhiteSpace(Model.Query.Search)) d["Search"] = Model.Query.Search;
-        if (!string.IsNullOrWhiteSpace(Model.Query.Role)) d["Role"] = Model.Query.Role;
-        return d;
-    }
 }
 
 <h2>Users</h2>
@@ -31,15 +18,6 @@
             @foreach (var role in new[] { "Customer", "Admin" })
             {
                 <option value="@role" selected="@(Model.Query.Role == role)">@role</option>
-            }
-        </select>
-    </div>
-    <div class="col-auto">
-        <label class="form-label">Per page</label>
-        <select name="PageSize" class="form-select">
-            @foreach (var size in new[] { 10, 25, 50 })
-            {
-                <option value="@size" selected="@(Model.Query.PageSize == size)">@size</option>
             }
         </select>
     </div>
@@ -94,30 +72,19 @@ else
         </tbody>
     </table>
 
-    @* paging: previous, 5 page numbers around the current page, next *@
-    var page = Model.Result.Page;
+    @* paging: previous / next links that keep the current filters *@
+    var current = Model.Result.Page;
     var last = Model.Result.TotalPages;
-    var start = Math.Max(1, page - 2);
-    var end = Math.Min(last, page + 2);
-    var prevLink = Link(page - 1);
-    var nextLink = Link(page + 1);
 
     <nav>
         <ul class="pagination">
-            <li class="page-item @(page <= 1 ? "disabled" : "")">
-                <a class="page-link" asp-action="Index" asp-all-route-data="prevLink">Previous</a>
+            <li class="page-item @(current <= 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-Search="@Model.Query.Search" asp-route-Role="@Model.Query.Role" asp-route-Page="@(current - 1)">Previous</a>
             </li>
-            @for (var p = start; p <= end; p++)
-            {
-                var pageLink = Link(p);
-                <li class="page-item @(p == page ? "active" : "")">
-                    <a class="page-link" asp-action="Index" asp-all-route-data="pageLink">@p</a>
-                </li>
-            }
-            <li class="page-item @(page >= last ? "disabled" : "")">
-                <a class="page-link" asp-action="Index" asp-all-route-data="nextLink">Next</a>
+            <li class="page-item @(current >= last ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-Search="@Model.Query.Search" asp-route-Role="@Model.Query.Role" asp-route-Page="@(current + 1)">Next</a>
             </li>
         </ul>
     </nav>
-    <p class="text-muted">Showing page @(page) of @last (@Model.Result.TotalCount users)</p>
+    <p class="text-muted">Page @current of @last (@Model.Result.TotalCount users)</p>
 }
