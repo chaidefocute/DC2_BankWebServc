@@ -99,6 +99,12 @@ namespace BankMvc.Services
             return Send<TransactionDto>(req);
         }
 
+        // ---------- users ----------
+
+        // get one user's details
+        public Task<ApiResult<UserDto>> GetUserAsync(int userId) =>
+            Send<UserDto>(new RestRequest($"{Routes.Users}/{userId}"));
+
         // ---------- sign in / register ----------
 
         // check the username + password, wrong details come back as Ok = false with the service's message

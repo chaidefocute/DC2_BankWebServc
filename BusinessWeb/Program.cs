@@ -1,3 +1,6 @@
+using System.Security.Claims;
+using BankMvc.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +19,24 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         o.ExpireTimeSpan = TimeSpan.FromMinutes(30);
         o.SlidingExpiration = true;                // the 30 minutes restart while the user is active
         o.Cookie.HttpOnly = true;                  // javascript can't read the cookie
+
+        // on every request, check the user hasn't been deactivated since they signed in
+        // otherwise a deactivated user could keep using the site until the cookie runs out
+        o.Events.OnValidatePrincipal = async ctx =>
+        {
+            if (!int.TryParse(ctx.Principal?.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+                return;
+
+            var api = ctx.HttpContext.RequestServices.GetRequiredService<BankApiClient>();
+            var user = await api.GetUserAsync(userId);
+
+            // only sign out when the service says the user is inactive (if the service is down, the pages show that instead)
+            if (user.Ok && user.Data?.IsActive == false)
+            {
+                ctx.RejectPrincipal();
+                await ctx.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            }
+        };
     });
 
 var app = builder.Build();
