@@ -16,6 +16,49 @@ namespace BankMvc.Models
         public bool IsActive { get; set; }
     }
 
+    // data for the profile page, only Name, Email, Address and Phone can be changed
+    public class ProfileViewModel
+    {
+        // shown on the page but not editable
+        public string Username { get; set; } = "";
+        public string Role { get; set; } = "";
+        public bool HasPicture { get; set; }
+
+        [Required(ErrorMessage = "Full name is required."), StringLength(100)]
+        [Display(Name = "Full name")]
+        public string Name { get; set; } = "";
+
+        [Required(ErrorMessage = "Email is required."), EmailAddress, StringLength(100)]
+        public string Email { get; set; } = "";
+
+        [StringLength(200)]
+        public string? Address { get; set; }
+
+        [StringLength(30), Phone]
+        public string? Phone { get; set; }
+    }
+
+    // filters the admin picks on the users page
+    public class UserSearchQuery
+    {
+        // part of the username, name or email
+        public string? Search { get; set; }
+
+        // Customer, Admin or empty = both
+        public string? Role { get; set; }
+
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+    }
+
+    // data from the admin's reset password form
+    public class ResetPasswordViewModel
+    {
+        [Required(ErrorMessage = "New password is required.")]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be at least 8 characters.")]
+        public string NewPassword { get; set; } = "";
+    }
+
     // data from the sign in form
     public class LoginViewModel
     {

@@ -5,12 +5,6 @@
 
 <h2>My Accounts</h2>
 
-@* success message from the transfer page *@
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-
 @if (Model.Error != null)
 {
     <div class="alert alert-danger">@Model.Error</div>
