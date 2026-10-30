@@ -41,7 +41,7 @@ namespace BankMvc.Models
     // filters the admin picks on the users page
     public class UserSearchQuery
     {
-        // part of the username, name or email
+        // part of the username, name, email or account number
         public string? Search { get; set; }
 
         public string? Role { get; set; }
@@ -95,6 +95,13 @@ namespace BankMvc.Models
         [DataType(DataType.Password), Display(Name = "Confirm password")]
         [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; } = "";
+    }
+
+    // data from the admin's create user form, same as register plus the role
+    public class CreateUserViewModel : RegisterViewModel
+    {
+        [Required, RegularExpression("^(Customer|Admin)$", ErrorMessage = "Role must be Customer or Admin.")]
+        public string Role { get; set; } = "Customer";
     }
 
     // data from the change password form on the profile page

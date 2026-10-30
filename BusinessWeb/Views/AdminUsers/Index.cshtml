@@ -4,11 +4,12 @@
 }
 
 <h2>Users</h2>
+<a class="btn btn-success" asp-action="Create">Create user</a>
 
 @* filter form, GET so the filters stay in the url (easy to page with them) *@
 <form method="get" asp-action="Index" class="row g-2 my-3">
     <div class="col-auto">
-        <label class="form-label">Search (username, name or email)</label>
+        <label class="form-label">Search (username, name, email or account number)</label>
         <input type="text" name="Search" value="@Model.Query.Search" class="form-control" placeholder="ex: smith" />
     </div>
     <div class="col-auto">

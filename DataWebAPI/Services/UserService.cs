@@ -144,7 +144,8 @@ namespace DataWebAPI.Services
 
             if (!string.IsNullOrWhiteSpace(q.Search))
             {
-                where.Add("(Username LIKE @s OR Name LIKE @s OR Email LIKE @s)");
+                // also finds the owner of an account number (subquery on the Accounts table)
+                where.Add("(Username LIKE @s OR Name LIKE @s OR Email LIKE @s OR UserId IN (SELECT UserId FROM Accounts WHERE AccountNumber LIKE @s))");
                 ps.Add(("@s", "%" + q.Search + "%"));
             }
             if (!string.IsNullOrWhiteSpace(q.Role))

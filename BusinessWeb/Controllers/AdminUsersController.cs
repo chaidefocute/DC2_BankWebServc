@@ -52,6 +52,82 @@ namespace BankMvc.Controllers
             return View(result.Data);
         }
 
+        // method to show the create user form
+        [HttpGet]
+        public IActionResult Create() => View(new CreateUserViewModel());
+
+        // method that creates a customer or an administrator
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(CreateUserViewModel m)
+        {
+            if (!ModelState.IsValid)
+                return View(m);
+
+            var result = await _api.CreateUserAsync(m, m.Role);
+            if (!result.Ok || result.Data == null)
+            {
+                // e.g. "Username is already taken." plus any field messages from the service
+                ModelState.AddModelError("", result.Message);
+                foreach (var d in result.Details)
+                    ModelState.AddModelError("", d);
+                return View(m);
+            }
+
+            await _api.LogAdminActionAsync(User, "CREATE_USER", "User", result.Data.UserId.ToString(), $"Created {m.Role} {m.Username}");
+            TempData["Success"] = "The user has been created.";
+            return RedirectToAction(nameof(Details), new { id = result.Data.UserId });
+        }
+
+        // method to show the edit form with the user's current details
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var result = await _api.GetUserAsync(id);
+            if (!result.Ok || result.Data == null)
+            {
+                TempData["Error"] = result.Message;
+                return RedirectToAction(nameof(Index));
+            }
+
+            var u = result.Data;
+            ViewData["UserId"] = id;
+            return View(new ProfileViewModel
+            {
+                Username = u.Username,
+                Role = u.Role,
+                Name = u.Name,
+                Email = u.Email,
+                Address = u.Address,
+                Phone = u.Phone
+            });
+        }
+
+        // method that saves the edited details (same fields as the profile page)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, ProfileViewModel m)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _api.UpdateUserAsync(id, m);
+                if (result.Ok)
+                {
+                    await _api.LogAdminActionAsync(User, "EDIT_USER", "User", id.ToString(), "User details edited by admin");
+                    TempData["Success"] = "The user has been updated.";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+
+                // e.g. "Email is already taken." or the service is down
+                ModelState.AddModelError("", result.Message);
+                foreach (var d in result.Details)
+                    ModelState.AddModelError("", d);
+            }
+
+            ViewData["UserId"] = id;
+            return View(m);
+        }
+
         // method that sets a new password for the user
         [HttpPost]
         [ValidateAntiForgeryToken]

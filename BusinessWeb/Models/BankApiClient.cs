@@ -165,6 +165,11 @@ namespace BankMvc.Services
             Send<UserDto>(new RestRequest(Routes.Users, Method.Post)
                 .AddJsonBody(new { m.Username, m.Name, m.Email, m.Password, m.Address, m.Phone, role = "Customer" }));
 
+        // create a user with the role the admin picked (admin create user page)
+        public Task<ApiResult<UserDto>> CreateUserAsync(RegisterViewModel m, string role) =>
+            Send<UserDto>(new RestRequest(Routes.Users, Method.Post)
+                .AddJsonBody(new { m.Username, m.Name, m.Email, m.Password, m.Address, m.Phone, role }));
+
         // ---------- audit trail ----------
 
         // record an admin action, ex: LogAdminActionAsync(User, "RESET_PASSWORD", "User", "7", "Password reset by admin")

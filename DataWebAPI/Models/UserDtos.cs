@@ -65,7 +65,7 @@ namespace DataWebAPI.Models
     // request object for listing / searching users
     public class UserQuery
     {
-        // matches part of the username, name or email
+        // matches part of the username, name, email or account number
         public string? Search { get; set; }
 
         [RegularExpression("^(Customer|Admin)$", ErrorMessage = "Role must be Customer or Admin.")]
