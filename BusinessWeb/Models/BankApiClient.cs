@@ -118,6 +118,26 @@ namespace BankMvc.Services
             return Send<UserDto>(req);
         }
 
+        // list / search users with paging (admin users page)
+        public Task<ApiResult<PagedResult<UserDto>>> SearchUsersAsync(UserSearchQuery q)
+        {
+            var req = new RestRequest(Routes.Users);
+            if (!string.IsNullOrWhiteSpace(q.Search)) req.AddQueryParameter("search", q.Search);
+            if (!string.IsNullOrWhiteSpace(q.Role)) req.AddQueryParameter("role", q.Role);
+            req.AddQueryParameter("page", q.Page.ToString());
+            req.AddQueryParameter("pageSize", q.PageSize.ToString());
+            return Send<PagedResult<UserDto>>(req);
+        }
+
+        // deactivate a user (the service replies 204 with no body)
+        public Task<ApiResult<JsonElement>> DeactivateUserAsync(int userId) =>
+            Send<JsonElement>(new RestRequest($"{Routes.Users}/{userId}", Method.Delete));
+
+        // set a new password for a user (the service replies 204 with no body)
+        public Task<ApiResult<JsonElement>> ResetPasswordAsync(int userId, string newPassword) =>
+            Send<JsonElement>(new RestRequest($"{Routes.Users}/{userId}/password", Method.Put)
+                .AddJsonBody(new { newPassword }));
+
         // get the picture file, null if the user has none or the service is down
         public async Task<(byte[] Data, string ContentType)?> GetPictureAsync(int userId)
         {

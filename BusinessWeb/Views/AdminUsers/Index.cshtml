@@ -1,0 +1,123 @@
+@model BankMvc.Controllers.AdminUsersViewModel
+@{
+    ViewData["Title"] = "Users";
+
+    // builds the link values for paging links, keeps the current filters (only the filled ones)
+    Dictionary<string, string> Link(int page)
+    {
+        var d = new Dictionary<string, string>
+        {
+            ["Page"] = page.ToString(),
+            ["PageSize"] = Model.Query.PageSize.ToString()
+        };
+        if (!string.IsNullOrWhiteSpace(Model.Query.Search)) d["Search"] = Model.Query.Search;
+        if (!string.IsNullOrWhiteSpace(Model.Query.Role)) d["Role"] = Model.Query.Role;
+        return d;
+    }
+}
+
+<h2>Users</h2>
+
+@* filter form, GET so the filters stay in the url (easy to page with them) *@
+<form method="get" asp-action="Index" class="row g-2 my-3">
+    <div class="col-auto">
+        <label class="form-label">Search (username, name or email)</label>
+        <input type="text" name="Search" value="@Model.Query.Search" class="form-control" placeholder="ex: smith" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label">Role</label>
+        <select name="Role" class="form-select">
+            <option value="">All</option>
+            @foreach (var role in new[] { "Customer", "Admin" })
+            {
+                <option value="@role" selected="@(Model.Query.Role == role)">@role</option>
+            }
+        </select>
+    </div>
+    <div class="col-auto">
+        <label class="form-label">Per page</label>
+        <select name="PageSize" class="form-select">
+            @foreach (var size in new[] { 10, 25, 50 })
+            {
+                <option value="@size" selected="@(Model.Query.PageSize == size)">@size</option>
+            }
+        </select>
+    </div>
+    <div class="col-auto align-self-end">
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a class="btn btn-outline-secondary" asp-action="Index">Clear</a>
+    </div>
+</form>
+
+@if (Model.Error != null)
+{
+    <div class="alert alert-danger">@Model.Error</div>
+}
+else if (Model.Result == null || !Model.Result.Items.Any())
+{
+    <div class="alert alert-info">No users found.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var u in Model.Result.Items)
+            {
+                <tr>
+                    <td>@u.Username</td>
+                    <td>@u.Name</td>
+                    <td>@u.Email</td>
+                    <td>@u.Role</td>
+                    <td>
+                        @if (u.IsActive)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Deactivated</span>
+                        }
+                    </td>
+                    <td><a asp-action="Details" asp-route-id="@u.UserId">Manage</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @* paging: previous, 5 page numbers around the current page, next *@
+    var page = Model.Result.Page;
+    var last = Model.Result.TotalPages;
+    var start = Math.Max(1, page - 2);
+    var end = Math.Min(last, page + 2);
+    var prevLink = Link(page - 1);
+    var nextLink = Link(page + 1);
+
+    <nav>
+        <ul class="pagination">
+            <li class="page-item @(page <= 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-all-route-data="prevLink">Previous</a>
+            </li>
+            @for (var p = start; p <= end; p++)
+            {
+                var pageLink = Link(p);
+                <li class="page-item @(p == page ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-all-route-data="pageLink">@p</a>
+                </li>
+            }
+            <li class="page-item @(page >= last ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-all-route-data="nextLink">Next</a>
+            </li>
+        </ul>
+    </nav>
+    <p class="text-muted">Showing page @(page) of @last (@Model.Result.TotalCount users)</p>
+}

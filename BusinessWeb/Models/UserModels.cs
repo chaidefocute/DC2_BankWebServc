@@ -38,6 +38,27 @@ namespace BankMvc.Models
         public string? Phone { get; set; }
     }
 
+    // filters the admin picks on the users page
+    public class UserSearchQuery
+    {
+        // part of the username, name or email
+        public string? Search { get; set; }
+
+        // Customer, Admin or empty = both
+        public string? Role { get; set; }
+
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+    }
+
+    // data from the admin's reset password form
+    public class ResetPasswordViewModel
+    {
+        [Required(ErrorMessage = "New password is required.")]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be at least 8 characters.")]
+        public string NewPassword { get; set; } = "";
+    }
+
     // data from the sign in form
     public class LoginViewModel
     {
