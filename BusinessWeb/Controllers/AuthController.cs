@@ -7,10 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BankMvc.Controllers
 {
-    // sign in, register and sign out (open to everyone)
     public class AuthController : Controller
     {
-        // the client used to talk to the part A service
         private readonly BankApiClient _api;
 
         public AuthController(BankApiClient api)
@@ -18,12 +16,9 @@ namespace BankMvc.Controllers
             _api = api;
         }
 
-        // method to show the sign in form
         [HttpGet]
-        public IActionResult Login(string? returnUrl = null)
-            => View(new LoginViewModel { ReturnUrl = returnUrl });
+        public IActionResult Login() => View(new LoginViewModel());
 
-        // method to check the username + password and sign the user in
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel m)
@@ -31,7 +26,6 @@ namespace BankMvc.Controllers
             if (!ModelState.IsValid)
                 return View(m);
 
-            // the service checks the password hash, we never see it
             var result = await _api.LoginAsync(m.Username, m.Password);
             if (!result.Ok || result.Data == null)
             {
@@ -41,19 +35,13 @@ namespace BankMvc.Controllers
 
             await SignInAsync(result.Data);
 
-            // only go back to a page on this site, so a link can't send the user to another website after signing in
-            if (Url.IsLocalUrl(m.ReturnUrl))
-                return Redirect(m.ReturnUrl);
-
             // home sends admins to the dashboard and customers to their accounts
             return RedirectToAction("Index", "Home");
         }
 
-        // method to show the register form
         [HttpGet]
         public IActionResult Register() => View(new RegisterViewModel());
 
-        // method to create a new customer and sign them in
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel m)
@@ -64,7 +52,6 @@ namespace BankMvc.Controllers
             var result = await _api.RegisterAsync(m);
             if (!result.Ok || result.Data == null)
             {
-                // e.g. "Username is already taken." plus any field messages from the service
                 ModelState.AddModelError("", result.Message);
                 foreach (var detail in result.Details)
                     ModelState.AddModelError("", detail);
@@ -76,7 +63,7 @@ namespace BankMvc.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // method to sign out (POST only, see the form in _Layout)
+        // POST only, so another site can't sign the user out with a link
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -86,7 +73,7 @@ namespace BankMvc.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // helper method to save who the user is in the login cookie
+        // saves who the user is in the login cookie
         // the other controllers read NameIdentifier (user id) and Role from here
         private Task SignInAsync(UserDto user)
         {

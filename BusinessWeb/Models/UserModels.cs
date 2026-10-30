@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BankMvc.Models
 {
-    // user details sent back by the part A service (the password hash is never sent)
+    // user details sent back by the part A service
     public class UserDto
     {
         public int UserId { get; set; }
@@ -16,7 +16,6 @@ namespace BankMvc.Models
         public bool IsActive { get; set; }
     }
 
-    // data for the profile page, only Name, Email, Address and Phone can be changed
     public class ProfileViewModel
     {
         // shown on the page but not editable
@@ -38,20 +37,16 @@ namespace BankMvc.Models
         public string? Phone { get; set; }
     }
 
-    // filters the admin picks on the users page
     public class UserSearchQuery
     {
-        // part of the username, name or email
         public string? Search { get; set; }
 
-        // Customer, Admin or empty = both
         public string? Role { get; set; }
 
         public int Page { get; set; } = 1;
         public int PageSize { get; set; } = 10;
     }
 
-    // data from the admin's reset password form
     public class ResetPasswordViewModel
     {
         [Required(ErrorMessage = "New password is required.")]
@@ -59,7 +54,6 @@ namespace BankMvc.Models
         public string NewPassword { get; set; } = "";
     }
 
-    // data from the sign in form
     public class LoginViewModel
     {
         [Required(ErrorMessage = "Username is required.")]
@@ -67,9 +61,6 @@ namespace BankMvc.Models
 
         [Required(ErrorMessage = "Password is required."), DataType(DataType.Password)]
         public string Password { get; set; } = "";
-
-        // the page the user wanted before being sent to sign in
-        public string? ReturnUrl { get; set; }
     }
 
     // data from the register form (same rules as the part A service)
@@ -98,6 +89,28 @@ namespace BankMvc.Models
 
         [DataType(DataType.Password), Display(Name = "Confirm password")]
         [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
+        public string ConfirmPassword { get; set; } = "";
+    }
+
+    public class CreateUserViewModel : RegisterViewModel
+    {
+        [Required, RegularExpression("^(Customer|Admin)$", ErrorMessage = "Role must be Customer or Admin.")]
+        public string Role { get; set; } = "Customer";
+    }
+
+    public class ChangePasswordViewModel
+    {
+        [Required(ErrorMessage = "Current password is required."), DataType(DataType.Password)]
+        [Display(Name = "Current password")]
+        public string CurrentPassword { get; set; } = "";
+
+        [Required(ErrorMessage = "New password is required."), DataType(DataType.Password)]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be at least 8 characters.")]
+        [Display(Name = "New password")]
+        public string NewPassword { get; set; } = "";
+
+        [DataType(DataType.Password), Display(Name = "Confirm new password")]
+        [Compare(nameof(NewPassword), ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; } = "";
     }
 }

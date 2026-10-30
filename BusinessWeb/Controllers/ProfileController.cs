@@ -6,11 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BankMvc.Controllers
 {
-    // any signed in user can see and edit their OWN profile (the user id always comes from the login cookie)
+    // the user id always comes from the login cookie, so users can only see their own profile
     [Authorize]
     public class ProfileController : Controller
     {
-        // the client used to talk to the part A service
         private readonly BankApiClient _api;
 
         public ProfileController(BankApiClient api)
@@ -18,13 +17,11 @@ namespace BankMvc.Controllers
             _api = api;
         }
 
-        // helper method to get the logged in user's id from the login cookie
         private bool TryGetUserId(out int userId)
         {
             return int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out userId);
         }
 
-        // page that shows the profile details and picture
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -51,7 +48,6 @@ namespace BankMvc.Controllers
             });
         }
 
-        // method that saves the edited details
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(ProfileViewModel m)
@@ -68,7 +64,6 @@ namespace BankMvc.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                // e.g. "Email is already taken." or the service is down
                 ModelState.AddModelError("", result.Message);
                 foreach (var d in result.Details)
                     ModelState.AddModelError("", d);
@@ -82,7 +77,6 @@ namespace BankMvc.Controllers
             return View(m);
         }
 
-        // method that uploads a new profile picture
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadPicture(IFormFile? picture)
@@ -100,15 +94,43 @@ namespace BankMvc.Controllers
             if (result.Ok)
                 TempData["Success"] = "Your profile picture has been updated.";
             else
-                // e.g. "Only .jpg, .jpeg and .png files are allowed."
                 TempData["Error"] = result.Details.Count > 0 ? string.Join(" ", result.Details) : result.Message;
 
             return RedirectToAction(nameof(Index));
         }
 
-        // the picture itself, the browser loads it from here (the part A service is never called from the browser)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel m)
+        {
+            if (!TryGetUserId(out var userId))
+                return Challenge();
+
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = ModelState.Values.SelectMany(v => v.Errors).First().ErrorMessage;
+                return RedirectToAction(nameof(Index));
+            }
+
+            // check the current password by trying to sign in with it
+            var check = await _api.LoginAsync(User.Identity?.Name ?? "", m.CurrentPassword);
+            if (!check.Ok)
+            {
+                TempData["Error"] = check.Message;
+                return RedirectToAction(nameof(Index));
+            }
+
+            var result = await _api.ResetPasswordAsync(userId, m.NewPassword);
+            if (result.Ok)
+                TempData["Success"] = "Your password has been changed.";
+            else
+                TempData["Error"] = result.Message;
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // the browser loads the picture from here, it never calls the part A service itself
         [HttpGet]
-        [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]   // so a new upload shows straight away
         public async Task<IActionResult> Picture()
         {
             if (!TryGetUserId(out var userId))

@@ -4,66 +4,58 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DataWebAPI.Controllers
 {
-    [Route("api/[controller]")]   // -> /api/users
+    [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _service;
         public UsersController(IUserService service) => _service = service;
 
-        // POST /api/users
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUserRequest req)
         {
             var user = await _service.CreateUserAsync(req);
-            return CreatedAtAction(nameof(Get), new { id = user.UserId }, user);   // 201 + Location
+            return CreatedAtAction(nameof(Get), new { id = user.UserId }, user);   // 201 + Location header
         }
 
-        // GET /api/users/2
         [HttpGet("{id:int}")]
         public async Task<IActionResult> Get(int id)
             => Ok(await _service.GetUserAsync(id));
 
-        // GET /api/users/username/olivia.smith
         [HttpGet("username/{username}")]
         public async Task<IActionResult> GetByUsername(string username)
             => Ok(await _service.GetUserByUsernameAsync(username));
 
-        // GET /api/users/email/olivia.smith@example.com
         [HttpGet("email/{email}")]
         public async Task<IActionResult> GetByEmail(string email)
             => Ok(await _service.GetUserByEmailAsync(email));
 
-        // PUT /api/users/2
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateUserRequest req)
         {
             await _service.UpdateUserAsync(id, req);
-            return NoContent();   // 204
+            return NoContent();
         }
 
-        // DELETE /api/users/2  (soft delete = deactivate)
+        // soft delete, the row stays because accounts point to it
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Deactivate(int id)
         {
             await _service.DeactivateUserAsync(id);
-            return NoContent();   // 204
+            return NoContent();
         }
 
-        // GET /api/users?search=smith&role=Customer&page=1&pageSize=10
         [HttpGet]
         public async Task<IActionResult> Search([FromQuery] UserQuery q)
             => Ok(await _service.SearchUsersAsync(q));
 
-        // PUT /api/users/2/password
         [HttpPut("{id:int}/password")]
         public async Task<IActionResult> ResetPassword(int id, [FromBody] ResetPasswordRequest req)
         {
             await _service.ResetPasswordAsync(id, req);
-            return NoContent();   // 204
+            return NoContent();
         }
 
-        // POST /api/users/login
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest req)
         {
@@ -76,10 +68,10 @@ namespace DataWebAPI.Controllers
                     details = (object?)null
                 });
 
-            return Ok(user);   // includes the role
+            return Ok(user);
         }
 
-        // POST /api/users/2/picture  (form-data, key = file)
+        // form-data, key = file
         [HttpPost("{id:int}/picture")]
         public async Task<IActionResult> UploadPicture(int id, IFormFile file)
         {
@@ -103,7 +95,6 @@ namespace DataWebAPI.Controllers
             return Ok(await _service.SavePictureAsync(id, file));
         }
 
-        // GET /api/users/2/picture
         [HttpGet("{id:int}/picture")]
         public async Task<IActionResult> GetPicture(int id)
         {

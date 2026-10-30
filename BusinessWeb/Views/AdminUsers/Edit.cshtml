@@ -1,0 +1,50 @@
+@model BankMvc.Models.ProfileViewModel
+@{
+    ViewData["Title"] = "Edit " + Model.Username;
+    var id = ViewData["UserId"];
+}
+
+<h2>Edit @Model.Username</h2>
+<a asp-action="Details" asp-route-id="@id">&larr; Back to user</a>
+
+<div class="row mt-3">
+    <div class="col-md-6">
+        <form asp-action="Edit" asp-route-id="@id" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            @* not editable, sent back so the page can show them again if there's an error *@
+            <input type="hidden" asp-for="Username" />
+            <input type="hidden" asp-for="Role" />
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Address" class="form-label">Address (optional)</label>
+                <input asp-for="Address" class="form-control" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Phone" class="form-label">Phone (optional)</label>
+                <input asp-for="Phone" class="form-control" />
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save changes</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

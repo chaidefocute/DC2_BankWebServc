@@ -2,10 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DataWebAPI.Models
 {
-    // request object for creating a user
     public class CreateUserRequest
     {
-        // letters, numbers, '.', '-' and '_' only (e.g. olivia.smith)
         [Required, StringLength(50)]
         [RegularExpression(@"^[a-zA-Z0-9._-]+$", ErrorMessage = "Username can only contain letters, numbers, '.', '-' and '_'.")]
         public string Username { get; set; } = "";
@@ -29,7 +27,7 @@ namespace DataWebAPI.Models
         public string Role { get; set; } = UserRoles.Customer;
     }
 
-    // request object for updating a user's profile (username, password and role are not changed here)
+    // username, password and role can't be changed here
     public class UpdateUserRequest
     {
         [Required, StringLength(100)]
@@ -45,7 +43,6 @@ namespace DataWebAPI.Models
         public string? Phone { get; set; }
     }
 
-    // request object for logging in
     public class LoginRequest
     {
         [Required]
@@ -55,17 +52,15 @@ namespace DataWebAPI.Models
         public string Password { get; set; } = "";
     }
 
-    // request object for resetting a user's password
     public class ResetPasswordRequest
     {
         [Required, StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be at least 8 characters.")]
         public string NewPassword { get; set; } = "";
     }
 
-    // request object for listing / searching users
     public class UserQuery
     {
-        // matches part of the username, name or email
+        // matches part of the username, name, email or account number
         public string? Search { get; set; }
 
         [RegularExpression("^(Customer|Admin)$", ErrorMessage = "Role must be Customer or Admin.")]
@@ -78,7 +73,7 @@ namespace DataWebAPI.Models
         public int PageSize { get; set; } = 10;
     }
 
-    // object to send user details back (response), the password hash is never included
+    // the password hash is never sent back
     public class UserDto
     {
         public int UserId { get; set; }
