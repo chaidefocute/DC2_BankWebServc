@@ -83,6 +83,16 @@ The "Upload profile picture" request needs a file. Before sending it, pick any .
 | GET | `/api/audit/{id}` | Get an audit log entry |
 | GET | `/api/audit?adminUserId=&action=&search=&from=&to=&page=&pageSize=` | Search the audit log |
 
+## Changes to Part A
+
+These were added to the API so the MVC website (Part B) could use them:
+
+- **User roles:** every user is a `Customer` or an `Admin`, and `POST /api/users/login` returns the role so the website can authorise correctly. The database is seeded with one admin and one known customer (see Seeded logins).
+- **Users:** `GET /api/users` lists and searches users, and `PUT /api/users/{id}/password` resets a password.
+- **Accounts and transactions:** `GET /api/accounts?userId=` returns all accounts for a user, and `GET /api/transactions` returns transactions across all accounts with date range, search, paging and sorting.
+- **Audit trail:** a new `AuditLogs` table, plus `POST /api/audit`, `GET /api/audit/{id}` and `GET /api/audit`. Only admins can have entries recorded (`NOT_ADMIN` otherwise).
+- **Health check:** `GET /api/health` confirms the API and database are up. The website uses it to show a warning on the home page.
+
 ## Errors
 
 Every error uses the same JSON format:

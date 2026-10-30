@@ -15,6 +15,9 @@
 
     public class AuditQuery
     {
+        // set by the controller from the login cookie, never taken from the URL
+        public int? AdminUserId { get; set; }
+
         public string? Search { get; set; }
 
         public string? ActionType { get; set; }

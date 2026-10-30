@@ -130,6 +130,7 @@ namespace BankMvc.Services
         public Task<ApiResult<PagedResult<AuditEntryDto>>> GetAuditLogAsync(AuditQuery q)
         {
             var req = new RestRequest(Routes.Audit);
+            if (q.AdminUserId.HasValue) req.AddQueryParameter("adminUserId", q.AdminUserId.Value.ToString());
             if (!string.IsNullOrWhiteSpace(q.Search)) req.AddQueryParameter("search", q.Search);
             if (!string.IsNullOrWhiteSpace(q.ActionType)) req.AddQueryParameter("action", q.ActionType);
             if (q.From.HasValue) req.AddQueryParameter("from", q.From.Value.ToString("yyyy-MM-dd"));
