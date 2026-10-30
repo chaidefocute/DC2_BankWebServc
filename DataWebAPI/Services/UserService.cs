@@ -7,7 +7,6 @@ namespace DataWebAPI.Services
     {
         private readonly string _connStr;
 
-        // project folder, pictures are saved under App_Data/pictures inside it
         private readonly string _root;
 
         // columns read by ReadUser (same order)
@@ -19,7 +18,6 @@ namespace DataWebAPI.Services
             _root = env.ContentRootPath;
         }
 
-        // helper method to open a connection to the database
         private SqliteConnection Open()
         {
             var conn = new SqliteConnection(_connStr);
@@ -27,7 +25,7 @@ namespace DataWebAPI.Services
             return conn;
         }
 
-        // helper method to build a sql command with parameters (parameters = no sql injection)
+        // values are sent as parameters, never joined into the sql (stops sql injection)
         private static SqliteCommand Cmd(SqliteConnection conn, string sql, params (string Name, object? Value)[] ps)
         {
             var cmd = conn.CreateCommand();
@@ -37,7 +35,6 @@ namespace DataWebAPI.Services
             return cmd;
         }
 
-        // helper function to turn a database row into user details
         private static UserDto ReadUser(SqliteDataReader rd) => new()
         {
             UserId = rd.GetInt32(0),
@@ -58,7 +55,6 @@ namespace DataWebAPI.Services
             return new ConflictException($"{field} is already taken.");
         }
 
-        // function to create a user
         public Task<UserDto> CreateUserAsync(CreateUserRequest r)
         {
             using var conn = Open();
@@ -82,7 +78,6 @@ namespace DataWebAPI.Services
             return GetUserAsync(id);
         }
 
-        // functions to fetch user details (username and email are not case sensitive in the db)
         public Task<UserDto> GetUserAsync(int userId) => FindUser("UserId", userId);
         public Task<UserDto> GetUserByUsernameAsync(string username) => FindUser("Username", username);
         public Task<UserDto> GetUserByEmailAsync(string email) => FindUser("Email", email);
@@ -100,7 +95,6 @@ namespace DataWebAPI.Services
             return Task.FromResult(ReadUser(rd));
         }
 
-        // function to update user details
         public Task UpdateUserAsync(int userId, UpdateUserRequest r)
         {
             using var conn = Open();
@@ -121,7 +115,7 @@ namespace DataWebAPI.Services
             return Task.CompletedTask;
         }
 
-        // function to deactivate a user (soft delete, the row stays because accounts point to it)
+        // soft delete, the row stays because accounts point to it
         public Task DeactivateUserAsync(int userId)
         {
             using var conn = Open();
@@ -133,12 +127,10 @@ namespace DataWebAPI.Services
             return Task.CompletedTask;
         }
 
-        // function to list / search users (paged)
         public Task<PagedResult<UserDto>> SearchUsersAsync(UserQuery q)
         {
             using var conn = Open();
 
-            // build the WHERE part, only with the filters that were given
             var where = new List<string>();
             var ps = new List<(string Name, object? Value)>();
 
@@ -180,7 +172,6 @@ namespace DataWebAPI.Services
             });
         }
 
-        // function to set a new password for a user
         public Task ResetPasswordAsync(int userId, ResetPasswordRequest r)
         {
             using var conn = Open();
@@ -193,7 +184,7 @@ namespace DataWebAPI.Services
             return Task.CompletedTask;
         }
 
-        // function to check a username + password, returns null if they are wrong
+        // returns null if the username or password is wrong
         public Task<UserDto?> LoginAsync(LoginRequest r)
         {
             using var conn = Open();
@@ -211,10 +202,10 @@ namespace DataWebAPI.Services
             return Task.FromResult<UserDto?>(user);
         }
 
-        // function to save a user's profile picture as a file, only the path goes in the db
+        // the picture is saved as a file, only its path goes in the db
         public async Task<UserDto> SavePictureAsync(int userId, IFormFile file)
         {
-            var user = await GetUserAsync(userId);   // 404 if the user does not exist
+            var user = await GetUserAsync(userId);
 
             // saved as App_Data/pictures/{userId}.jpg (or .png), a new upload replaces the old one
             var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
@@ -236,7 +227,6 @@ namespace DataWebAPI.Services
             return user;
         }
 
-        // function to get the full file path of a user's profile picture
         public async Task<string> GetPictureFileAsync(int userId)
         {
             var user = await GetUserAsync(userId);

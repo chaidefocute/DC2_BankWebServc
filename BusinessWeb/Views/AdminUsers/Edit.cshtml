@@ -10,7 +10,6 @@
 <div class="row mt-3">
     <div class="col-md-6">
         <form asp-action="Edit" asp-route-id="@id" method="post">
-            @* errors from the service (e.g. email already taken) show here *@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             @* not editable, sent back so the page can show them again if there's an error *@

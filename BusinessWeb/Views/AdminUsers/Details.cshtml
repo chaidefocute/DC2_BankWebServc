@@ -44,8 +44,7 @@
         @if (Model.IsActive && !isMe)
         {
             <h5>Deactivate user</h5>
-            <p class="text-muted">They will be signed out and won't be able to sign in again.</p>
-            @* the confirm box stops a deactivation by accident *@
+            <p class="text-muted">They won't be able to sign in again.</p>
             <form asp-action="Deactivate" asp-route-id="@Model.UserId" method="post"
                   onsubmit="return confirm('Deactivate @Model.Username?');">
                 <button type="submit" class="btn btn-danger">Deactivate</button>
